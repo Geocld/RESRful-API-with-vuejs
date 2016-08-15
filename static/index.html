@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>vue API</title>
+	<style>
+	[v-cloak] { display: none; }
+	</style>
+</head>
+<body>
+	<div id="app" v-cloak>
+		<div v-for="task in tasks">
+			<div>
+				{{ task.id }}
+				{{ task.title }}
+				<button @click="deleteTask(task.id)">x</button>
+			</div>
+			<div>
+				{{ task.description }}
+			</div>
+		</div>
+
+		<div class="box">
+			<input type="text" v-model="new_task.title"><br>
+			<textarea cols="30" rows="10" v-model="new_task.description"></textarea>
+			<button @click="addTask">add</button>
+		</div>
+	</div>
+
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.9.3/vue-resource.min.js"></script>
+	<script>
+		var vue = new Vue({
+			el: '#app',
+			data: {
+				tasks: [],
+				new_task: {
+					title: '',
+					description: ''
+				}
+			},
+			compiled: function() {
+				var self = this;
+				//在编译后即调用API接口取得服务器端数据
+				self.$http.get('/todo/api/tasks').then(function(res) {
+					self.tasks = res.data.tasks;
+				});
+			},
+			methods: {
+				addTask: function() {
+					var self = this;
+					self.$http.post('/todo/api/addTask', {
+						title: self.new_task.title,
+						description: self.new_task.description
+					}).then(function(res) {
+						self.tasks = res.data.tasks;
+					});
+				},
+				deleteTask: function(id) {
+					var self = this;
+					self.$http.post('/todo/api/deleteTask', {
+						id: id
+					}).then(function(res) {
+						self.tasks = res.data.tasks;
+					});
+				}
+			}
+		})
+	</script>
+</body>
+</html>
